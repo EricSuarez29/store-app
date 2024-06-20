@@ -36,10 +36,14 @@ class Repository {
     }
 
     protected function execute(string $query) {
+        $result = null;
         $error = null;
         try {
             $this->connect();
-            // $this->stmt = sqlsrv_query( $this->connection, $query);
+            $stmt = $this->connection->prepare($query);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $result = $result->fetch_assoc();
         } catch (\Throwable $th) {
             $error = $th;
         } finally {
@@ -49,9 +53,13 @@ class Repository {
         if ($error) {
             throw $error;
         }
+
+        if ($result){
+            return $result;
+        }
     }
 
     private function close() {
-        $this->connection->close(); 
+        $this->connection?->close(); 
     }
 }
